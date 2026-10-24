@@ -1,0 +1,40 @@
+Package: agriEquity
+Type: Package
+Title: Equity and Sustainability Assessment of Agricultural Subsidies
+Version: 0.1.0
+Authors@R: 
+    person("Anbukkani", "Perumal", email = "anbueconomic@gmail.com",
+           role = c("aut", "cre", "cph"))
+Description: An integrated framework for evaluating whether agricultural
+    support measures reach smallholders, women farmers and resource-poor
+    regions, and at what productivity and environmental cost. It provides
+    survey-weighted benefit incidence analysis by landholding class, gender,
+    region or income quantile; concentration, Kakwani and Reynolds-Smolensky
+    progressivity measures (Kakwani, 1977) <doi:10.2307/2230485> with
+    bootstrap confidence intervals; multi-dimensional equity scorecards with
+    parity ratios and Theil decomposition of benefit inequality; effects of
+    subsidies on income inequality and Foster-Greer-Thorbecke poverty
+    (Foster, Greer and Thorbecke, 1984) <doi:10.2307/1913475>;
+    budget-neutral reallocation of a subsidy budget under alternative
+    allocation rules, including a welfare-optimal allocation that combines
+    diminishing productivity returns, Atkinson (1970)
+    <doi:10.1016/0022-0531(70)90039-6> inequality aversion and
+    environmental damage costs; and productivity-equity-sustainability
+    trade-off frontiers. Simulated farm-household data illustrate the
+    workflow.
+License: GPL (>= 3)
+Encoding: UTF-8
+Language: en-GB
+LazyData: true
+Depends: R (>= 3.5.0)
+Imports: graphics, stats
+Suggests: knitr, rmarkdown, testthat (>= 3.0.0)
+VignetteBuilder: knitr
+Config/testthat/edition: 3
+RoxygenNote: 7.3.1
+NeedsCompilation: no
+Packaged: 2026-10-15 10:08:23 UTC; root
+Author: Anbukkani Perumal [aut, cre, cph]
+Maintainer: Anbukkani Perumal <anbueconomic@gmail.com>
+Repository: CRAN
+Date/Publication: 2026-10-24 12:00:02 UTC

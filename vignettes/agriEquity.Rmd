@@ -1,0 +1,121 @@
+---
+title: "Equity and sustainability assessment of agricultural subsidies"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Equity and sustainability assessment of agricultural subsidies}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>", fig.width = 6,
+                      fig.height = 4)
+```
+
+```{r}
+library(agriEquity)
+```
+
+Policy-matrix calculations measure how much support agriculture receives.
+They do not show **who** receives it, whether it reaches smallholders,
+women farmers and resource-poor regions, or what the same budget could
+achieve if allocated differently. `agriEquity` answers these questions with
+household-level data in four steps: incidence, progressivity and equity,
+distributional effects, and budget-neutral reallocation with explicit
+productivity-equity-sustainability trade-offs.
+
+The `farm_subsidy` data are **simulated** for 1,500 households with three
+types of support: an input (fertiliser) subsidy, a flat income transfer
+and an irrigation power subsidy.
+
+## 1. Who receives support?
+
+```{r}
+bi <- benefit_incidence(farm_subsidy, "fertiliser_subsidy",
+                        group = "size_class", weights = "weight",
+                        area = "land_ha", income = "farm_income")
+bi[, c("group", "population_share", "benefit_share", "parity_ratio",
+       "benefit_per_hectare")]
+```
+
+Marginal farms make up almost half of households but receive about an
+eighth of the input subsidy.
+
+## 2. Is it progressive?
+
+```{r}
+with(farm_subsidy, progressivity_index(fertiliser_subsidy, farm_income,
+                                       weights = weight))
+with(farm_subsidy, progressivity_index(income_transfer, farm_income,
+                                       weights = weight))
+```
+
+## 3. Equity across farm size, gender and region
+
+```{r}
+se <- subsidy_equity(farm_subsidy, "fertiliser_subsidy",
+                     dimensions = c("size_class", "gender", "region"),
+                     weights = "weight",
+                     target = list(size_class = c("marginal", "small"),
+                                   gender = "female",
+                                   region = c("Rainfed-East", "Hill-Tribal")))
+se$summary
+```
+
+`theil_between_share` shows how much of the inequality in benefits is
+explained by each dimension.
+
+## 4. Effects on inequality and poverty
+
+```{r}
+de <- with(farm_subsidy, distributional_effects(
+  farm_income,
+  list(fertiliser = fertiliser_subsidy, transfer = income_transfer,
+       power = power_subsidy),
+  weights = weight, poverty_line = 60000))
+de$summary[, c("scenario", "gini", "fgt0", "fgt1", "lifted_out_share",
+               "cost_per_household_lifted")]
+```
+
+## 5. Budget-neutral reallocation
+
+The same fertiliser-subsidy budget is reallocated under alternative rules.
+The productivity response (`marginal_return`) and the environmental damage
+cost per unit of support (`env_cost_per_rupee`) are simulated household
+attributes; in applied work they come from production-function estimates
+and environmental valuation.
+
+```{r}
+fs <- farm_subsidy
+prio <- with(fs, 1 + (size_class %in% c("marginal", "small")) +
+               0.5 * (gender == "female") +
+               0.5 * (region %in% c("Rainfed-East", "Hill-Tribal")))
+br <- budget_reallocation(fs$farm_income, fs$fertiliser_subsidy,
+                          weights = fs$weight, area = fs$land_ha,
+                          priority = prio,
+                          target = fs$size_class %in% c("marginal", "small"),
+                          return_rate = fs$marginal_return,
+                          env_cost = fs$env_cost_per_rupee,
+                          inequality_aversion = 1, env_weight = 1,
+                          poverty_line = 60000)
+m <- br$metrics
+m[, c("rule", "productivity_gain", "environmental_cost", "gini_post",
+      "target_share", "poverty_headcount")]
+```
+
+## 6. Productivity-equity-sustainability trade-offs
+
+```{r}
+tf <- tradeoff_frontier(fs$farm_income, fs$fertiliser_subsidy,
+                        weights = fs$weight,
+                        target = fs$size_class %in% c("marginal", "small"),
+                        return_rate = fs$marginal_return,
+                        env_cost = fs$env_cost_per_rupee,
+                        aversion = c(0, 0.5, 1, 2), env_weights = c(0, 1, 3))
+tf
+plot(tf)
+```
+
+The current allocation (star) lies inside the frontier: in this simulated
+example, the same budget could deliver higher productivity, lower
+inequality and lower environmental cost at once.
